@@ -1,0 +1,127 @@
+﻿@page "/add"
+@rendermode InteractiveWebAssembly
+@inject StudentsMarksService service
+@inject NavigationManager nav
+
+<h3>AddStudents</h3>
+
+
+
+<EditForm Model="model" OnValidSubmit="SaveData">
+	<DataAnnotationsValidator />
+	<ValidationSummary />
+	@if (!string.IsNullOrEmpty(message))
+	{
+		<span class="text-danger text-lg-center">@message</span>
+	}
+	<div>
+		<label for="name">Name:</label>
+		<InputText id="name" class="form-control" required @bind-Value="model.Name" />
+		<ValidationMessage For="()=> model.Name" />
+	</div>
+	<div>
+		<label for="name">Class:</label>
+		<InputNumber id="name" class="form-control" required @bind-Value="model.Class" />
+		<ValidationMessage For="()=> model.Class" />
+	</div>
+	@* <div>
+	<label for="name">Regular:</label>
+	<InputCheckbox id="name" class="form-control" required @bind-Value="model.Regular" />
+	<ValidationMessage For="()=> model.Regular" />
+	</div> *@
+	<table class="table table-active table-bordered table-hover">
+		<tr>
+			<th>ExamName</th>
+			<th>TotalNumber</th>
+			<th>ObtainedNumber</th>
+			<th>StartDate</th>
+			<th>EndDate</th>
+
+			<th>
+				<button type="button" class="btn btn-outline-info" @onclick="AddMarks">Add Marks</button>
+			</th>
+		</tr>
+		@foreach (var prod in model.studentsMarks)
+		{
+			<tr>
+				<td>
+					<InputText class="form-control" @bind-Value="prod.ExamName" />
+					<ValidationMessage For="()=> prod.ExamName" />
+				</td>
+				<td>
+					<InputNumber class="form-control" @bind-Value="prod.TotalNumber" />
+					<ValidationMessage For="()=> prod.TotalNumber" />
+				</td>
+				<td>
+					<InputNumber class="form-control" @bind-Value="prod.ObtainedNumber" />
+					<ValidationMessage For="()=> prod.ObtainedNumber" />
+				</td>
+				<td>
+					<InputDate @bind-Value="prod.StartDate" />
+					<ValidationMessage For="()=> prod.StartDate" />
+				</td>
+				<td>
+					<InputDate class="form-control" @bind-Value="prod.EndDate" />
+					<ValidationMessage For="()=> prod.EndDate" />
+				</td>
+
+				<td>
+					<button type="button" class="btn btn-outline-warning" @onclick="()=> DeleteMarks(prod)">Delete</button>
+				</td>
+			</tr>
+
+
+		}
+	</table>
+
+	<button type="submit" class="btn btn-outline-success">
+		Save
+	</button>
+	<NavLink class="btn btn-outline-info" href="cat">
+		Cancel
+	</NavLink>
+</EditForm>
+
+
+
+
+
+@code {
+
+
+
+
+
+	private Students? model = new Students();
+	int index = 0;
+
+
+	string? message;
+
+	public async Task SaveData()
+	{
+		var response = await service.Save(model);
+
+		if (response.IsSuccessStatusCode)
+		{
+			nav.NavigateTo("/cat");
+		}
+		else
+		{
+			this.message = response.ReasonPhrase;
+			//response.Content
+		}
+	}
+
+	private void AddMarks()
+	{
+		model.studentsMarks?.Add(new StudentsMarks());
+	}
+	private void DeleteMarks(StudentsMarks item)
+	{
+		model.studentsMarks?.Remove(item);
+
+	}
+
+}
+

@@ -1,0 +1,105 @@
+﻿@page "/cat"
+@inject IJSRuntime JS
+@rendermode InteractiveWebAssembly
+@inject StudentsMarksService service
+
+
+
+<h3>StudentsList</h3>
+<NavLink class="nav-link" href="add">Add</NavLink>
+<br />
+<hr />
+<table class="table table-responsive table-striped table-hover">
+	<thead>
+		<tr>
+			<th>ID</th>
+			<th>Name</th>
+			<th>Class</th>
+			@* <th>Regular</th> *@
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var cat in data)
+		{
+
+			<tr>
+				<td>@cat.StudentId</td>
+				<td>@cat.Name</td>
+				<td>@cat.Class</td>
+				@* <td>@cat.Regular</td> *@
+				<td>
+					<ol>
+						@foreach (var Marks in cat.studentsMarks)
+						{
+							<li>
+								<dl>
+									<dt>ExamName</dt>
+									<dd>@Marks.ExamName</dd>
+									<dt>TotalNumber</dt>
+									<dd>@Marks.TotalNumber</dd>
+									<dt>ObtainedNumber</dt>
+									<dd>@Marks.ObtainedNumber</dd>
+									<dt>StartDate</dt>
+									<dd>
+										@Marks.StartDate?.ToString("dd-MMM-yyyy")
+									</dd>
+									<dt>EndDate</dt>
+									<dd>
+										@Marks.EndDate?.ToString("dd-MMM-yyyy")
+									</dd>
+
+								</dl>
+							</li>
+						}
+					</ol>
+				</td>
+				<td class="btn-group">
+					<a class="nav-link btn btn-outline-info" href="/edit/@cat.StudentId">Edit</a>
+					<button class="btn btn-outline-danger" @onclick="()=> DeleteData(cat)">
+						Delete
+					</button>
+				</td>
+			</tr>
+		}
+	</tbody>
+</table>
+
+
+
+@code {
+
+	private IList<Students>? data = new List<Students>();
+
+
+
+	protected override async Task OnInitializedAsync()
+	{
+
+		await loadData();
+
+	}
+
+	async Task loadData()
+	{
+		this.data = await this.service.GetAll();
+	}
+
+	async Task DeleteData(Students students)
+	{
+		var confirm = await JS.InvokeAsync<bool>("confirm", $"delete data of {students.Name}?");
+
+		if (!confirm) return;
+
+
+		var result = await this.service.Delete(students.StudentId);
+
+		if (result.IsSuccessStatusCode)
+		{
+			await loadData();
+		}
+		//this.StateHasChanged();
+	}
+
+
+
+}
